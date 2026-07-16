@@ -69,7 +69,6 @@ func (g *Game) resetMap() {
 	g.ball.x = 0.5
 	g.ball.y = 0.5
 	g.drawEmptyMap()
-	//g.draw()
 }
 
 func (g *Game) update() {
