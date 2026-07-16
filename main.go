@@ -1,4 +1,4 @@
-tep size is perfectly lockpackage main
+package main
 
 import (
 	"fmt"
@@ -14,6 +14,8 @@ import (
 // make the ball movement smoother in diagonal.
 //   to do it don't render the ball every frame but just when it reaches an integer value on both axis
 //   could be convenient to quantize floats
+//   checl DDA vs Bresenham Line Drawing Algorithm
+//   !!could be convevnient to switch from float aritmetic to int. Storing generic positions with 0-100 or 0-500
 
 // TODO bugs:
 // - Setting a ball.y !=0.5 but the ball is still drawn at 0.5
