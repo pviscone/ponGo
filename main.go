@@ -8,21 +8,27 @@ import (
 
 // ////////////////////////////////////////////
 // TODO:
+// implement scattering on platform logic
+//    // Reflection + gaussian noise (dependent on dy)
 // implement controls
+// 	  // Use atomic ints to store last pressure of qapl keys
+//    // Check in the render loop that Delta time with pressure < frametime/3 (e.g.)
 // capture SIGWINCH to recompute termsize and redraw
 // capture ctrl-c to unhide cursor (or ESC key)
-// make the ball movement smoother in diagonal.
-//   to do it don't render the ball every frame but just when it reaches an integer value on both axis
-//   could be convenient to quantize floats
-//   checl DDA vs Bresenham Line Drawing Algorithm
-//   !!could be convevnient to switch from float aritmetic to int. Storing generic positions with 0-100 or 0-500
 
-// TODO bugs:
-// - Setting a ball.y !=0.5 but the ball is still drawn at 0.5
+// Refactor:
+// change render loop using ticks
 
-// Further additions
+// Further additions:
 // Create menu to set game parameters at runtime
 // Implement online multiplayer
+// Implement CPU player
+//    // Level 10 = perfect prediction, < 10 random smearing of the prediction
+// make the ball movement smoother in diagonal.
+//    // to do it don't render the ball every frame but just when it reaches an integer value on both axis
+//    // could be convenient to quantize floats
+//    // checl DDA vs Bresenham Line Drawing Algorithm
+//    // !!could be convevnient to switch from float aritmetic to int. Storing generic positions with 0-100 or 0-500
 
 func main() {
 
