@@ -76,13 +76,13 @@ func (g *Game) update() {
 		if g.plat1.y-(g.plat1.widthFrac/2) < g.ball.y && g.ball.y < g.plat1.y+(g.plat1.widthFrac/2) {
 			g.ball.dx = -g.ball.dx
 		} else {
-			g.scoreGoal(&g.plat1)
+			g.scoreGoal(&g.plat2)
 		}
 	} else if g.ball.x+g.ball.dx > 1 {
-		if g.plat1.y-(g.plat1.widthFrac/2) < g.ball.y && g.ball.y < g.plat1.y+(g.plat1.widthFrac/2) {
+		if g.plat2.y-(g.plat2.widthFrac/2) < g.ball.y && g.ball.y < g.plat2.y+(g.plat2.widthFrac/2) {
 			g.ball.dx = -g.ball.dx
 		} else {
-			g.scoreGoal(&g.plat2)
+			g.scoreGoal(&g.plat1)
 		}
 	}
 	g.ball.x += g.ball.dx
