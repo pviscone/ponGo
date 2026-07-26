@@ -2,11 +2,25 @@ package main
 
 import (
 	"fmt"
+	"github.com/chewxy/math32"
+	"golang.org/x/term"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 )
+
+var _, unit_frac = cursor.posToFrac(0, 1)
+var _, up_boundary_frac = cursor.posToFrac(0, 2)
+var _, low_boundary_frac = cursor.posToFrac(0, cursor.termsize.Height-1)
+
+func sign(x float32) float32 {
+	if x >= 0. {
+		return 1.
+	} else {
+		return -1.
+	}
+}
 
 type Ball struct {
 	x, y, dx, dy float32
@@ -15,9 +29,9 @@ type Ball struct {
 
 type Platform struct {
 	//widthFrac must be converted to a odd int later
-	y, dy, widthFrac float32
-	score            int
-	char             string
+	y, widthFrac float32
+	score        int
+	char         string
 }
 
 func (p *Platform) getIntWidth() int {
@@ -26,6 +40,14 @@ func (p *Platform) getIntWidth() int {
 		int_width++
 	}
 	return int_width
+}
+
+func (p *Platform) move(move Movement) {
+	if move == MoveUp && p.y-up_boundary_frac > p.widthFrac/2 {
+		p.y -= p.widthFrac / 2
+	} else if move == MoveDown && low_boundary_frac-p.y > p.widthFrac/2 {
+		p.y += p.widthFrac / 2
+	}
 }
 
 type Game struct {
@@ -68,27 +90,46 @@ func (g *Game) drawEmptyMap() {
 func (g *Game) resetMap() {
 	g.ball.x = 0.5
 	g.ball.y = 0.5
+	g.plat1.y = 0.5
+	g.plat2.y = 0.5
 	g.drawEmptyMap()
 }
 
-func (g *Game) update() {
-	if g.ball.x+g.ball.dx < 0 {
+func (g *Game) bounceOnPlat(move Movement) {
+	var offset float32 = 0.
+	if move == MoveUp {
+		offset = math32.Pi / 4
+	} else if move == MoveDown {
+		offset = -math32.Pi / 4
+	}
+	theta := math32.Atan(math32.Abs(g.ball.dy / g.ball.dx))
+	new_theta := -theta + offset + (rand.Float32()-0.5)*math32.Pi*0.5
+	speed := math32.Sqrt(g.ball.dx*g.ball.dx + g.ball.dy*g.ball.dy)
+	g.ball.dx = -sign(g.ball.dx) * speed * math32.Cos(new_theta)
+	g.ball.dy = -sign(g.ball.dy) * speed * math32.Sin(new_theta)
+}
+
+func (g *Game) update(p1_move Movement, p2_move Movement, restore func()) {
+
+	// Update platform
+	g.plat1.move(p1_move)
+	g.plat2.move(p2_move)
+
+	// Update ball
+	if g.ball.x+g.ball.dx < unit_frac {
 		if g.plat1.y-(g.plat1.widthFrac/2) < g.ball.y && g.ball.y < g.plat1.y+(g.plat1.widthFrac/2) {
-			g.ball.dx = -g.ball.dx
+			g.bounceOnPlat(p1_move)
 		} else {
-			g.scoreGoal(&g.plat2)
+			g.scoreGoal(&g.plat2, restore)
 		}
-	} else if g.ball.x+g.ball.dx > 1 {
+	} else if g.ball.x+g.ball.dx > 1-unit_frac {
 		if g.plat2.y-(g.plat2.widthFrac/2) < g.ball.y && g.ball.y < g.plat2.y+(g.plat2.widthFrac/2) {
-			g.ball.dx = -g.ball.dx
+			g.bounceOnPlat(p2_move)
 		} else {
-			g.scoreGoal(&g.plat1)
+			g.scoreGoal(&g.plat1, restore)
 		}
 	}
 	g.ball.x += g.ball.dx
-
-	_, up_boundary_frac := cursor.posToFrac(0, 2)
-	_, low_boundary_frac := cursor.posToFrac(0, cursor.termsize.Height-1)
 
 	if g.ball.y+g.ball.dy < up_boundary_frac || g.ball.y+g.ball.dy > low_boundary_frac {
 		g.ball.dy = -g.ball.dy
@@ -138,10 +179,12 @@ func (g *Game) draw() {
 	cursor.updateStatus(g)
 }
 
-func (g *Game) scoreGoal(plat *Platform) {
+func (g *Game) scoreGoal(plat *Platform, restore func()) {
 	(*plat).score += 1
 	g.ball.dy = 0
 	g.ball.dx = float32(rand.Intn(2)*2-1) * 0.01
+
+	restore()
 	g.resetMap()
 
 	if (*plat).score >= g.goal_limit {
@@ -155,6 +198,8 @@ func (g *Game) scoreGoal(plat *Platform) {
 		fmt.Fprint(os.Stdout, "\x1b[?25h")
 		os.Exit(0)
 	} else {
+		fd := int(os.Stdin.Fd())
+		term.MakeRaw(fd)
 		time.Sleep(2 * time.Second)
 	}
 }
