@@ -181,8 +181,9 @@ func (g *Game) draw() {
 
 func (g *Game) scoreGoal(plat *Platform, restore func()) {
 	(*plat).score += 1
+
+	g.ball.dx = float32(rand.Intn(2)*2-1) * math32.Sqrt(g.ball.dx*g.ball.dx+g.ball.dy*g.ball.dy)
 	g.ball.dy = 0
-	g.ball.dx = float32(rand.Intn(2)*2-1) * 0.01
 
 	restore()
 	g.resetMap()
