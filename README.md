@@ -17,7 +17,9 @@ go run .
 
 #### Play
 
-Player1: q UP/ a Down Player2: o UP/ l Down
+Player1: Q UP/ A Down
+
+Player2: O UP/ L Down
 
 Key controls can be changed in `controls.go` Other game settings (ball speed,
 etc.) can be changed in `main.go` in the `Game` struct initialization
