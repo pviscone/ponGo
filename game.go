@@ -116,13 +116,13 @@ func (g *Game) update(p1_move Movement, p2_move Movement, restore func()) {
 	g.plat2.move(p2_move)
 
 	// Update ball
-	if g.ball.x+g.ball.dx < unit_frac {
+	if g.ball.x+g.ball.dx < 0 {
 		if g.plat1.y-(g.plat1.widthFrac/2) < g.ball.y && g.ball.y < g.plat1.y+(g.plat1.widthFrac/2) {
 			g.bounceOnPlat(p1_move)
 		} else {
 			g.scoreGoal(&g.plat2, restore)
 		}
-	} else if g.ball.x+g.ball.dx > 1-unit_frac {
+	} else if g.ball.x+g.ball.dx > 1 {
 		if g.plat2.y-(g.plat2.widthFrac/2) < g.ball.y && g.ball.y < g.plat2.y+(g.plat2.widthFrac/2) {
 			g.bounceOnPlat(p2_move)
 		} else {
@@ -186,6 +186,8 @@ func (g *Game) scoreGoal(plat *Platform, restore func()) {
 
 	restore()
 	g.resetMap()
+	fd := int(os.Stdin.Fd())
+	term.MakeRaw(fd)
 
 	if (*plat).score >= g.goal_limit {
 		cursor.moveTo(cursor.termsize.Width/2-5, cursor.termsize.Height/2)
@@ -195,11 +197,10 @@ func (g *Game) scoreGoal(plat *Platform, restore func()) {
 			cursor.write("PLAYER 2 WINS")
 		}
 		time.Sleep(3 * time.Second)
+		restore()
 		fmt.Fprint(os.Stdout, "\x1b[?25h")
 		os.Exit(0)
 	} else {
-		fd := int(os.Stdin.Fd())
-		term.MakeRaw(fd)
 		time.Sleep(2 * time.Second)
 	}
 }
